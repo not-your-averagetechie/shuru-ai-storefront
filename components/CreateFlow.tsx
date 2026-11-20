@@ -21,11 +21,11 @@ type Profile = {
 type Step = "input" | "looking" | "confirm" | "generating";
 type Mode = "instagram" | "describe";
 
-const EXAMPLES = [
-  "Yoga teacher in Pune, 8 years. I teach working women to fix back pain at home.",
-  "CA student. I explain income tax and saving money in Hinglish for first-jobbers.",
-  "Home baker in Indore, eggless cakes and cookies. 12K followers.",
-  "UPSC aspirant mentor, cleared prelims twice, I share daily current affairs notes.",
+const EXAMPLES: [string, string][] = [
+  ["Yoga teacher", "Yoga teacher in Pune, 8 years. I teach working women to fix back pain at home."],
+  ["Finance explainer", "CA student. I explain income tax and saving money in Hinglish for first-jobbers."],
+  ["Home baker", "Home baker in Indore, eggless cakes and cookies. 12K followers."],
+  ["UPSC mentor", "UPSC aspirant mentor, cleared prelims twice, I share daily current affairs notes."],
 ];
 
 const STAGES = [
@@ -258,13 +258,14 @@ export default function CreateFlow() {
             />
             {step !== "confirm" && !desc && (
               <div className="mt-2 flex flex-wrap gap-1.5">
-                {EXAMPLES.map((ex) => (
+                <span className="text-xs text-sub py-1.5">Try:</span>
+                {EXAMPLES.map(([label, ex]) => (
                   <button
-                    key={ex}
+                    key={label}
                     onClick={() => setDesc(ex)}
                     className="text-left text-xs bg-canvas hover:bg-brand-soft border border-line rounded-full px-3 py-1.5 text-sub"
                   >
-                    {ex.split(",")[0]}
+                    {label}
                   </button>
                 ))}
               </div>
