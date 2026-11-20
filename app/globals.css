@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-jakarta), var(--font-deva), ui-sans-serif, system-ui, sans-serif;
+  --color-brand: #5b3df5;
+  --color-brand-dark: #4327d6;
+  --color-brand-soft: #efebff;
+  --color-ink: #16131f;
+  --color-sub: #5f5a6e;
+  --color-line: #e8e5ef;
+  --color-canvas: #f7f6fb;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+/* Storefront surface: colours come from the theme CSS variables. */
+.store {
+  background: var(--s-bg);
+  color: var(--s-text);
+}
+.store-card {
+  background: var(--s-card);
+  border: 1px solid var(--s-border);
+}
+.store-hero {
+  background: linear-gradient(135deg, var(--s-from), var(--s-to));
+}
+.store-muted {
+  color: var(--s-muted);
+}
+.store-chip {
+  background: var(--s-chip);
+  color: var(--s-text);
+}
+.store-btn {
+  background: var(--s-accent);
+  color: var(--s-accent-text);
+}
+
+/* Inline-edit fields look like the text they edit until focused. */
+.edit-field {
+  width: 100%;
+  background: transparent;
+  border-radius: 8px;
+  outline: 1.5px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.15s, background 0.15s;
+  resize: none;
+  color: inherit;
+}
+.edit-field:hover {
+  outline-color: color-mix(in srgb, currentColor 22%, transparent);
+}
+.edit-field:focus {
+  outline: 2px solid var(--s-accent, #5b3df5);
+  background: color-mix(in srgb, var(--s-card, #fff) 85%, transparent);
+}
+.edit-field::placeholder {
+  color: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+.shimmer {
+  background: linear-gradient(90deg, #ece9f3 0px, #f7f5fb 120px, #ece9f3 240px);
+  background-size: 800px 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer,
+  .rise {
+    animation: none;
+  }
 }

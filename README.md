@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shuru: AI Storefront Generator
 
-## Getting Started
+Turns a creator's Instagram handle, or a few lines about themselves, into a ready-to-share storefront: a bio, 2–4 product ideas priced in INR with a "why this price" note, product descriptions, and a mobile landing page at a public link. Built as a take-home for SuperProfile's PM (AI-native, 0→1) role.
 
-First, run the development server:
+**Flow:** handle or description → confirm profile → generate (~10s) → edit inline / rewrite any part with AI → pick a link → publish → share on WhatsApp / Instagram bio. Visitors tap "I want this" to leave their WhatsApp/email, and the creator sees views, taps and interested buyers in the editor.
+
+## Stack
+
+- **Next.js 16** (App Router, route handlers) + Tailwind CSS 4, deployed on Vercel
+- **Claude** via `@anthropic-ai/sdk`: `claude-haiku-5-5` primary, `claude-sonnet-5-5` fallback, JSON-schema structured outputs parsed with zod
+- **Apify** `instagram-profile-scraper` actor to read public profile signals (bio, followers, last captions)
+- **Upstash Redis** for stores, slugs, analytics and leads (falls back to a local JSON file in dev)
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # then add your keys
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | yes | Claude API key |
+| `APIFY_TOKEN` | no | Without it, the Instagram path shows a friendly fallback to "Describe myself" |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | no | Upstash Redis. Without them, data is stored in `.data/db.json` (dev only) |
+| `ANTHROPIC_MODEL`, `ANTHROPIC_FALLBACK_MODEL`, `ANTHROPIC_EFFORT` | no | Defaults: `claude-haiku-5-5`, `claude-sonnet-5-5`, `low` |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Import the repo into Vercel.
+2. Add Upstash Redis from the Vercel Marketplace (Storage tab); it injects the `KV_*` variables.
+3. Add `ANTHROPIC_API_KEY` and `APIFY_TOKEN` as environment variables, then deploy.
 
-## Learn More
+## Where things are
 
-To learn more about Next.js, take a look at the following resources:
+| Path | What |
+| --- | --- |
+| `lib/prompts.ts` | System prompt (who the buyer is, what sells, pricing rules, writing rules) and per-task prompts |
+| `lib/ai.ts` | Model calls: structured output, timeouts, fallback model, business-rule repair pass |
+| `lib/pricing.ts` | INR price bands per format, audience tiers, charm pricing, validation |
+| `lib/input.ts` | Handle normalisation and gibberish checks before any paid call |
+| `lib/instagram.ts` | Apify lookup, error mapping, 24h cache, avatar inlining |
+| `app/api/*` | generate, regenerate (bio / one product / new product), store CRUD, publish, analytics, leads |
+| `components/Editor.tsx` | Inline WYSIWYG editor with autosave and per-section AI rewrite |
+| `components/Storefront.tsx` | Public page + "I want this" sheet (also the editor's Preview) |
+| `app/[slug]/opengraph-image.tsx` | WhatsApp / social link preview card |
+| `docs/DECISIONS.md` | Decision doc |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How AI coding tools were used
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Built with Claude Code end to end: reading the brief, checking the Apify actor's real output on live handles before writing the parser, scaffolding, writing the code, and driving a headless browser at phone width to test the flow and edge cases. Product decisions, prompt rules and price bands were reviewed and tuned by hand against real generations (see the decision doc for what changed and why).
 
-## Deploy on Vercel
+## Edge cases handled
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Handle that doesn't exist, private account, empty profile, Instagram slow or down (25s cap, one retry, then the describe-yourself path), invalid handle, URL pasted instead of handle, empty input, keyboard-mash, one-word niche (generates with stated assumptions and a follow-up question), unsafe offers like guaranteed returns (declined kindly), model timeout or error (fallback model, then a retry screen that keeps the input), model output that breaks business rules (one repair call, then deterministic clamping), slug already taken (suggestions), unknown store link (friendly 404), bad lead contact (inline validation), rate limits on paid endpoints.
