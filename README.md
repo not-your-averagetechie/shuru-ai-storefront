@@ -45,7 +45,7 @@ npm run dev                  # http://localhost:3000
 | `components/Editor.tsx` | Inline WYSIWYG editor with autosave and per-section AI rewrite |
 | `components/Storefront.tsx` | Public page + "I want this" sheet (also the editor's Preview) |
 | `app/[slug]/opengraph-image.tsx` | WhatsApp / social link preview card |
-| `docs/DECISIONS.md` | Decision doc |
+| `docs/Decision-Doc.pdf` | Decision doc (source: `docs/decision-doc.html`) |
 
 ## How AI coding tools were used
 
