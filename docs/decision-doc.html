@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shuru: AI Storefront Generator · Decision Doc</title>
+<style>
+  @page { size: A4; margin: 14mm 15mm 14mm 15mm; }
+  :root { --ink:#16131f; --sub:#5f5a6e; --line:#e3e0ea; --brand:#5b3df5; --soft:#f3f0ff; }
+  * { box-sizing: border-box; }
+  body { font: 9.6pt/1.42 -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); margin: 0; }
+  h1 { font-size: 17pt; margin: 0 0 2px; letter-spacing: -0.01em; }
+  h2 { font-size: 11pt; margin: 12px 0 4px; color: var(--brand); text-transform: uppercase; letter-spacing: .04em; }
+  h3 { font-size: 9.8pt; margin: 8px 0 2px; }
+  p { margin: 0 0 5px; }
+  ul, ol { margin: 0 0 5px; padding-left: 16px; }
+  li { margin: 0 0 2px; }
+  .meta { color: var(--sub); font-size: 9pt; margin-bottom: 8px; }
+  .meta a { color: var(--brand); }
+  .tldr { background: var(--soft); border-left: 3px solid var(--brand); padding: 7px 10px; margin: 6px 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 3px 0 6px; font-size: 9pt; }
+  th, td { text-align: left; vertical-align: top; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+  th { background: #f7f6fb; font-weight: 600; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .fig { border: 1px solid var(--line); border-radius: 8px; padding: 6px; margin: 4px 0 6px; }
+  .cap { font-size: 8.4pt; color: var(--sub); margin-top: 2px; }
+  .muted { color: var(--sub); }
+  .pb { break-before: page; }
+  b { font-weight: 650; }
+  code { font-size: 8.6pt; background: #f4f3f8; padding: 0 3px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<h1>Shuru: AI Storefront Generator</h1>
+<div class="meta">
+  Decision doc · SuperProfile PM (AI-native, 0→1) take-home ·
+  Live: <a href="https://shuru-ai-storefront.vercel.app">shuru-ai-storefront.vercel.app</a> ·
+  Code: <a href="https://github.com/not-your-averagetechie/shuru-ai-storefront">github.com/not-your-averagetechie/shuru-ai-storefront</a>
+</div>
+
+<div class="tldr">
+  <b>In one line:</b> a creator types their Instagram handle (or two lines about themselves), confirms it's them, and about 15 seconds later is editing a finished store: bio, 2–4 products laddered from an impulse buy to a premium offer, INR prices with a private "why this price", and a phone-first page they publish to a link and share on WhatsApp. Buyers tap <i>I want this</i>, which tells the creator which product to make first.
+</div>
+
+<h2>1. The problem, as I understand it</h2>
+<p>The empty store is not a copywriting problem. A creator with 20K followers can write a caption; what they lack is <b>confidence about three decisions</b>: what is sellable, what to charge, and whether anyone will buy. Every blank field is a decision they postpone, so they stall. The job of this product is to <b>replace decisions with defaults the creator can react to</b>, and to make "publish" feel safe.</p>
+<p><b>Assumptions I made</b> (each is a thing I'd check with SuperProfile data):</p>
+<ul>
+  <li><b>Most stalled creators have not made a product yet.</b> So the store sells <i>ideas</i>. The public page collects "I want this" (name + WhatsApp/email) instead of payment: it is honest to buyers and it validates demand before the creator builds anything. On SuperProfile this becomes a pre-order through existing checkout.</li>
+  <li><b>The first sale matters more than margin.</b> Buyers are price-sensitive and pay by UPI, so every store gets an entry product at ₹499 or less.</li>
+  <li><b>Waiting is where creators drop off.</b> Generation has to finish in ~10–20s with visible progress, on a phone, on patchy data.</li>
+  <li><b>Persona reframe:</b> I treat both personas as one person at different points, "has knowledge, has never sold", and give them one input screen with two doors (Instagram / Describe myself). The micro-creator gets richer output from their profile; the expert without an audience loses nothing.</li>
+</ul>
+
+<h2>2. User flow</h2>
+<div class="fig">
+<svg viewBox="0 0 760 232" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Helvetica, Arial" font-size="10.5">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#5f5a6e"/></marker></defs>
+  <g stroke="#5f5a6e" stroke-width="1.2" fill="none" marker-end="url(#a)">
+    <path d="M118,40 H150"/><path d="M262,40 H294"/><path d="M406,40 H438"/><path d="M550,40 H582"/>
+    <path d="M206,60 V104"/><path d="M262,124 H294"/>
+    <path d="M638,60 V104"/><path d="M582,124 H550"/><path d="M438,124 H406"/>
+    <path d="M350,144 V176"/><path d="M406,196 H438"/>
+    <path d="M63,60 V124 H150" stroke-dasharray="3 3"/>
+  </g>
+  <g font-weight="600">
+    <rect x="8" y="20" width="110" height="40" rx="8" fill="#efebff" stroke="#5b3df5"/>
+    <text x="63" y="37" text-anchor="middle">Landing</text><text x="63" y="51" text-anchor="middle" font-weight="400" fill="#5f5a6e">handle or describe</text>
+    <rect x="150" y="20" width="112" height="40" rx="8" fill="#fff" stroke="#c9c3da"/>
+    <text x="206" y="37" text-anchor="middle">Read Instagram</text><text x="206" y="51" text-anchor="middle" font-weight="400" fill="#5f5a6e">Apify, 25s cap</text>
+    <rect x="294" y="20" width="112" height="40" rx="8" fill="#fff" stroke="#c9c3da"/>
+    <text x="350" y="37" text-anchor="middle">"Is this you?"</text><text x="350" y="51" text-anchor="middle" font-weight="400" fill="#5f5a6e">+ optional note, language</text>
+    <rect x="438" y="20" width="112" height="40" rx="8" fill="#fff" stroke="#c9c3da"/>
+    <text x="494" y="37" text-anchor="middle">Generate</text><text x="494" y="51" text-anchor="middle" font-weight="400" fill="#5f5a6e">staged progress, ~15s</text>
+    <rect x="582" y="20" width="112" height="40" rx="8" fill="#efebff" stroke="#5b3df5"/>
+    <text x="638" y="37" text-anchor="middle">Editor = the page</text><text x="638" y="51" text-anchor="middle" font-weight="400" fill="#5f5a6e">tap to edit, ✨ rewrite</text>
+    <rect x="150" y="104" width="112" height="40" rx="8" fill="#fff7e6" stroke="#e7b24a"/>
+    <text x="206" y="121" text-anchor="middle">Describe myself</text><text x="206" y="135" text-anchor="middle" font-weight="400" fill="#5f5a6e">with the reason shown</text>
+    <rect x="294" y="104" width="112" height="40" rx="8" fill="#fff" stroke="#c9c3da"/>
+    <text x="350" y="121" text-anchor="middle">Share</text><text x="350" y="135" text-anchor="middle" font-weight="400" fill="#5f5a6e">WhatsApp, IG bio steps</text>
+    <rect x="438" y="104" width="112" height="40" rx="8" fill="#fff" stroke="#c9c3da"/>
+    <text x="494" y="121" text-anchor="middle">Pick link, publish</text><text x="494" y="135" text-anchor="middle" font-weight="400" fill="#5f5a6e">slug check + suggestions</text>
+    <rect x="582" y="104" width="112" height="40" rx="8" fill="#fff" stroke="#c9c3da"/>
+    <text x="638" y="121" text-anchor="middle">Preview</text><text x="638" y="135" text-anchor="middle" font-weight="400" fill="#5f5a6e">exact buyer view</text>
+    <rect x="294" y="176" width="112" height="40" rx="8" fill="#efebff" stroke="#5b3df5"/>
+    <text x="350" y="193" text-anchor="middle">Public page</text><text x="350" y="207" text-anchor="middle" font-weight="400" fill="#5f5a6e">buyer taps "I want this"</text>
+    <rect x="438" y="176" width="112" height="40" rx="8" fill="#fff" stroke="#c9c3da"/>
+    <text x="494" y="193" text-anchor="middle">Creator sees</text><text x="494" y="207" text-anchor="middle" font-weight="400" fill="#5f5a6e">views · taps · leads</text>
+  </g>
+  <text x="212" y="80" fill="#b7791f" font-size="9.5">not found / private /</text>
+  <text x="212" y="92" fill="#b7791f" font-size="9.5">empty / slow</text>
+  <text x="70" y="118" fill="#5f5a6e" font-size="9.5">no IG</text>
+  <text x="560" y="168" fill="#5f5a6e" font-size="9.5">At Generate: thin input →</text>
+  <text x="560" y="180" fill="#5f5a6e" font-size="9.5">editor says "we guessed X" + asks 1 question</text>
+  <text x="560" y="196" fill="#5f5a6e" font-size="9.5">unusable → kind message +</text>
+  <text x="560" y="208" fill="#5f5a6e" font-size="9.5">examples, input kept</text>
+</svg>
+<div class="cap">Every failure branch lands on a screen with a next step; none ends on an error page.</div>
+</div>
+
+<h3>Main screen: what I chose and what I rejected</h3>
+<div class="two">
+<div>
+<div class="fig">
+<svg viewBox="0 0 330 150" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Helvetica, Arial" font-size="9">
+  <rect x="8" y="6" width="96" height="138" rx="12" fill="#fff" stroke="#5b3df5" stroke-width="1.5"/>
+  <rect x="16" y="16" width="80" height="18" rx="5" fill="#ffb547"/><circle cx="56" cy="38" r="9" fill="#ff7a59"/>
+  <rect x="28" y="52" width="56" height="5" rx="2" fill="#16131f"/><rect x="22" y="61" width="68" height="4" rx="2" fill="#c9c3da"/>
+  <rect x="16" y="72" width="80" height="34" rx="5" fill="#fff" stroke="#c9c3da" stroke-dasharray="2 2"/>
+  <rect x="21" y="78" width="50" height="4" rx="2" fill="#16131f"/><rect x="21" y="86" width="66" height="3" rx="1.5" fill="#c9c3da"/>
+  <text x="21" y="101" font-size="7.5" font-weight="700">₹499</text><text x="64" y="101" font-size="7" fill="#5b3df5">✨ rewrite</text>
+  <rect x="16" y="110" width="80" height="14" rx="5" fill="#fff" stroke="#c9c3da" stroke-dasharray="2 2"/>
+  <rect x="16" y="128" width="80" height="10" rx="4" fill="#5b3df5"/>
+  <text x="116" y="22" font-weight="700" font-size="10">Chosen: edit in place</text>
+  <text x="116" y="38" fill="#5f5a6e">The editor is the buyer's page,</text>
+  <text x="116" y="50" fill="#5f5a6e">in the creator's theme. Tap text</text>
+  <text x="116" y="62" fill="#5f5a6e">to change it; each section has a</text>
+  <text x="116" y="74" fill="#5f5a6e">✨ chip row (shorter, cheaper,</text>
+  <text x="116" y="86" fill="#5f5a6e">Hinglish…). Autosaves. One sticky</text>
+  <text x="116" y="98" fill="#5f5a6e">"Publish" button.</text>
+  <text x="116" y="118" fill="#16131f">Reacting is easier than deciding:</text>
+  <text x="116" y="130" fill="#16131f">it already looks finished.</text>
+</svg>
+</div>
+</div>
+<div>
+<div class="fig">
+<svg viewBox="0 0 330 150" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, Helvetica, Arial" font-size="9">
+  <rect x="8" y="6" width="96" height="138" rx="12" fill="#fff" stroke="#c9c3da" stroke-width="1.5"/>
+  <text x="16" y="22" font-size="7.5" fill="#5f5a6e">Step 2 of 4 · Products</text>
+  <rect x="16" y="28" width="80" height="4" rx="2" fill="#e3e0ea"/><rect x="16" y="28" width="40" height="4" rx="2" fill="#9a93ad"/>
+  <text x="16" y="45" font-size="7">Title</text><rect x="16" y="48" width="80" height="11" rx="3" fill="#fff" stroke="#c9c3da"/>
+  <text x="16" y="70" font-size="7">Price (₹)</text><rect x="16" y="73" width="80" height="11" rx="3" fill="#fff" stroke="#c9c3da"/>
+  <text x="16" y="95" font-size="7">Description</text><rect x="16" y="98" width="80" height="22" rx="3" fill="#fff" stroke="#c9c3da"/>
+  <rect x="16" y="127" width="36" height="11" rx="4" fill="#e3e0ea"/><rect x="58" y="127" width="38" height="11" rx="4" fill="#9a93ad"/>
+  <text x="116" y="22" font-weight="700" font-size="10">Rejected: form wizard</text>
+  <text x="116" y="38" fill="#5f5a6e">Bio → Products → Prices → Preview,</text>
+  <text x="116" y="50" fill="#5f5a6e">AI pre-fills each field.</text>
+  <text x="116" y="66" fill="#16131f">Why not: on a phone the creator</text>
+  <text x="116" y="78" fill="#16131f">never sees what buyers see while</text>
+  <text x="116" y="90" fill="#16131f">editing; four steps feel like work</text>
+  <text x="116" y="102" fill="#16131f">and re-open the decisions we</text>
+  <text x="116" y="114" fill="#16131f">wanted to remove. It is easier to</text>
+  <text x="116" y="126" fill="#16131f">build, which is why it tempts.</text>
+</svg>
+</div>
+</div>
+</div>
+<p class="muted">Also considered: <b>chat-to-edit</b> ("make the e-book cheaper"). Rejected as the main surface: typing prompts on a phone is effort and results are unpredictable. I kept its best part as one-tap steer chips on each section.</p>
+
+<h2 class="pb">3. Key decisions and trade-offs</h2>
+<table>
+  <tr><th style="width:24%">Decision</th><th>Why</th><th style="width:28%">Cost of it</th></tr>
+  <tr><td><b>Confirm the profile before generating</b></td><td>A typo can read a stranger's account. The card also shows the creator what we read, which builds trust, and is the natural place to ask for one optional line.</td><td>One extra tap.</td></tr>
+  <tr><td><b>Price inside fixed INR bands, chosen by the model</b></td><td>Prices from an LLM alone drift. Code owns bands per format (e.g. e-book ₹99–599, 1:1 ₹299–4,999/session, cohort ₹1,499–9,999), audience tier, charm pricing and a ladder rule; the model picks inside them and explains. Bands are the one dial to retune with SuperProfile's sales data.</td><td>Bands are my assumptions, not market data.</td></tr>
+  <tr><td><b>"I want this" instead of checkout</b></td><td>Products don't exist yet. A waitlist is honest, gives the creator their first leads in WhatsApp, and tells them which product to build first.</td><td>No money moves in the prototype.</td></tr>
+  <tr><td><b>Claude Haiku 5.5 primary, Sonnet 5.5 fallback</b></td><td>10–15s for a full store at under ₹0.5 with the Instagram read. Speed beats a slightly better sentence because the loading screen is the riskiest moment.</td><td>Copy is a bit plainer than a larger model's.</td></tr>
+  <tr><td><b>Regenerate per part, with steers</b></td><td>"Regenerate all" destroys edits. Per-section rewrites see the whole store (and the creator's edits) so they stay coherent and never duplicate a format.</td><td>More endpoints and prompts.</td></tr>
+  <tr><td><b>No login; private edit link</b></td><td>Zero friction to the first publish. Link saved in the browser and shown after publishing.</td><td>Link = access. Real product uses the SuperProfile account.</td></tr>
+  <tr><td><b>Hinglish and Hindi output</b></td><td>It's how many of these creators already caption; English-only pages read like someone else wrote them.</td><td>Harder to QC; app chrome stays English.</td></tr>
+  <tr><td><b>Built for the share</b></td><td>The link lives in WhatsApp and the IG bio, so there is a generated preview card, a WhatsApp share button and "add to bio" steps.</td><td>—</td></tr>
+</table>
+
+<h2>4. What I deliberately did not build</h2>
+<ul>
+  <li><b>Payments, delivery, accounts:</b> SuperProfile already has them; rebuilding would spend hours that don't change the activation outcome.</li>
+  <li><b>AI cover images:</b> slow, costly, and generic stock-looking art lowers trust. Themes + emoji instead.</li>
+  <li><b>Deep theming / layout editor:</b> four colour themes only. Every extra choice is another place to stall.</li>
+  <li><b>Testimonials, "500+ students", strike-through prices:</b> they would be invented. The prompt forbids invented facts; the code never adds fake anchors.</li>
+  <li><b>Reading reels (video/vision) or YouTube:</b> captions + bio carry most of the signal for v1 at a fraction of the cost.</li>
+  <li><b>Creator dashboard beyond views, taps and leads.</b></li>
+</ul>
+
+<h2>5. How the AI part works</h2>
+<p><b>Input.</b> A static system prompt holds the product judgment: the buyer, the ladder rule, allowed formats, INR bands (injected from code so prompt and validator never disagree), writing rules, safety rules and an injection guard. The user message carries the profile (bio, followers, category, last 8 captions) and notes in tagged blocks, the language choice and the audience tier.</p>
+<p><b>Output.</b> JSON schema enforced through Claude structured outputs and parsed with zod: <code>input_check</code> (ok / thin / unusable + one follow-up question), <code>assumptions</code>, <code>creator</code> (name, niche, tagline, bio), <code>theme</code>, <code>language_used</code>, and 2–4 <code>products</code> (format enum, title, price, description, 3 includes, CTA, rationale).</p>
+<p><b>Quality control, in four layers.</b> (1) <b>Before any paid call:</b> handle format, empty input, keyboard-mash heuristics, empty profile. (2) <b>Schema</b> enforced by the API. (3) <b>Business rules:</b> 2–4 products, distinct formats, one entry product ≤ ₹499, price within band → if broken, one repair call listing the violations. (4) <b>Deterministic clean-up:</b> clamp to band, snap to charm price, unit from format, trim lengths, sort into a ladder.</p>
+<p><b>Failure handling.</b> 25s timeout on Haiku → retry on Sonnet (30s) → "AI is slow, try again" with the input kept. Refusals (e.g. guaranteed-returns stock tips) get a kind message. Thin input still produces a store, plus a "we filled in a few gaps" banner and one question that rebuilds the store when answered.</p>
+<p><b>Tuning from real outputs.</b> I ran about a dozen generations across niches and fixed what I saw: every store was e-book + template pack (now max one PDF product); rationales all said "a cup of chai" (one comparison per store); follower counts in descriptions were ignored (tier now inferred from notes); Hinglish copy assumed the creator's gender (neutral phrasing required); a workshop was priced "per session" (units now set by code); rationales cited made-up "market rates" (forbidden).</p>
+
+<h2>6. Success metrics</h2>
+<table>
+  <tr><th style="width:30%">Metric</th><th>Target and reasoning</th><th style="width:27%">How to measure</th></tr>
+  <tr><td><b>Primary: share of new signups who publish a store with ≥1 product in their first session</b></td><td><b>+15 percentage points</b> over the blank-store control (e.g. 20% → 35% if today's baseline is ~20%; I don't know the real number). The flow removes the three decisions that cause the stall, so the lift should be large, not marginal.</td><td>A/B on new signups (AI flow vs today's onboarding). Events: <code>generated → edited → published</code>. Read in ~2 weeks.</td></tr>
+  <tr><td><b>Quality: share of published AI stores with a first lead or sale in 14 days</b></td><td>At least <b>equal to</b> manually built stores. Publishing a store nobody buys from is a vanity win; this is the guardrail.</td><td>Join store source to first-sale / "I want this" events.</td></tr>
+  <tr><td><b>Diagnostic: price edit rate</b></td><td>If more than ~40% of generated prices are changed, the bands are wrong for that niche. Also watch time-to-publish (target median under 5 min) and generation failure rate (under 1%).</td><td>Field-level edit events per product.</td></tr>
+</table>
+
+<h2>7. Launch thought</h2>
+<p>Start where the pain already sits: <b>creators who signed up and never published</b>. SuperProfile knows their Instagram handle, so draft their store before they come back and send it on WhatsApp: "We drafted your store from your Instagram, publish it in one tap." Each draft costs under ₹1 and the lift is measurable within a week. Then make it the default onboarding for new signups behind the A/B above. Later, a public no-login version ("What should you sell? Find out in 60 seconds") becomes top-of-funnel, with "Made with SuperProfile" on every published page as a loop.</p>
+
+<h2>8. With two more weeks</h2>
+<ol>
+  <li><b>Eval set:</b> 40 real creator profiles across niches and languages, a rubric (product fit, price sanity, language, no invented facts) graded by an LLM judge plus spot human review, run on every prompt change.</li>
+  <li><b>Real price bands</b> from SuperProfile sales by niche × format × follower tier, replacing my assumptions.</li>
+  <li><b>Help the creator make product #1:</b> generate the e-book outline, workshop agenda or WhatsApp-community welcome kit. That is the next stall after publishing.</li>
+  <li><b>Wire "I want this" into checkout</b> as UPI pre-orders, with automatic messages to the waitlist when the creator marks the product ready.</li>
+  <li><b>Voice-note input in Hindi/Hinglish</b> for creators who talk more easily than they type; Hindi app chrome.</li>
+</ol>
+
+<h2>How I used AI coding tools</h2>
+<p>Claude Code did most of the typing: scaffolding, components, API routes, and driving a browser at phone width to test flows and edge cases. I used it to check the Instagram actor's real output on live handles (including a private and a non-existent one) before writing the parser, and to run batches of generations to compare prompt versions. The product calls (ladder rule, price bands, waitlist instead of checkout, what not to build) and the prompt fixes above came from reading real outputs; I treated the tool's first drafts as drafts. Stack: Next.js 16, Tailwind, Claude API, Apify, Upstash Redis, Vercel.</p>
+
+</body>
+</html>
